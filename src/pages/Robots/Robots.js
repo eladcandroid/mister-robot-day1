@@ -5,15 +5,24 @@ import RobotService from '../../services/RobotService';
 
 import { Link } from 'react-router-dom';
 import RobotFilter from '../../components/RobotFilter/RobotFilter';
-
+import { observer, inject } from 'mobx-react';
+import { observable, computed } from 'mobx';
 import './Robots.scss';
-export default class Robots extends Component {
-  state = { robots: [], selectedRobot: null, nameFilter: 'example' };
+
+@inject('store')
+@observer
+class Robots extends Component {
+  state = { selectedRobot: null };
+
+  store = this.props.store;
+  robotStore = this.props.store.robotStore;
+
+  @observable
+  nameFilter = '';
 
   async componentDidMount() {
-    const robots = await RobotService.getRobots();
-    this.setState({ robots });
-    // this.setState({ robots, selectedRobot: robots[0] })
+    this.store.robotStore.fetchRobots();
+    // this.robots = robots;
   }
 
   robotSelected(selectedRobot) {
@@ -26,8 +35,8 @@ export default class Robots extends Component {
     const {
       target: { value }
     } = e;
-    const robots = await RobotService.getRobots({ term: value });
-    this.setState({ robots, nameFilter: value });
+    this.store.robotStore.fetchRobots({ term: value });
+    this.nameFilter = value;
   };
 
   handleActiveChange = async e => {
@@ -35,7 +44,9 @@ export default class Robots extends Component {
   };
 
   render() {
-    const { selectedRobot, robots } = this.state;
+    const { selectedRobot } = this.state;
+
+    const { robotsCount, robots } = this.robotStore;
 
     return (
       <div>
@@ -44,13 +55,16 @@ export default class Robots extends Component {
           <h2>Where Cats and Robots Meet</h2>
         </header>
         <RobotFilter
-          value={this.state.nameFilter}
+          value={this.nameFilter}
           onFilterNameChange={this.handleNameChange}
           onFilterActiveChange={this.handleActiveChange}
         />
         {/* {this.state.nameFilter} */}
         {!selectedRobot && (
           <section className="robot-list">
+            Number of robots: {robotsCount}
+            <br />
+            <br />
             {robots.map(robot => (
               <div key={robot._id}>
                 <Link to={`/robot/edit/${robot._id}`}>
@@ -71,3 +85,5 @@ export default class Robots extends Component {
     );
   }
 }
+
+export default Robots;

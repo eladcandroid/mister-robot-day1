@@ -13,6 +13,7 @@ import {
 import './App.scss';
 import RobotDetails from './pages/RobotDetails/RobotDetails';
 import RobotEdit from './pages/RobotEdit/RobotEdit';
+import { inject } from 'mobx-react';
 
 const PrivateRoute = props => {
   return props.isAdmin ? <Route {...props} /> : <Redirect to="/login" />;
@@ -29,13 +30,20 @@ const About = () => {
   );
 };
 
+@inject('store')
 class App extends Component {
+  componentDidMount() {
+    console.log('this.props:', this.props);
+  }
+
   goBack = () => {};
   render() {
     return (
       <Router>
         <div>
-          <navbar>
+          {
+            this.props.store.showNavBar &&
+          <nav>
             <ul style={{ listStyle: 'none' }}>
               <NavLink exact to="/">
                 <li>Home</li>
@@ -44,7 +52,7 @@ class App extends Component {
                 <li>About</li>
               </NavLink>
             </ul>
-          </navbar>
+          </nav>}
 
           <Switch>
             <Route path="/" exact component={Robots} />
